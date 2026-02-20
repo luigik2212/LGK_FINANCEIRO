@@ -4,7 +4,8 @@ Primeira etapa do SaaS multiusuário com:
 
 - Cadastro de usuário
 - Login com sessão
-- Dashboard privado (cada usuário visualiza apenas os próprios dados)
+- Dashboard privado com resumo das contas
+- Página de contas para cadastrar e listar despesas domésticas
 - Envio de e-mail de boas-vindas ao concluir cadastro
 
 ## Como executar

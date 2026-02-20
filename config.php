@@ -38,5 +38,19 @@ function db(): PDO
         )'
     );
 
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS accounts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            amount REAL NOT NULL,
+            due_date TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT "pendente",
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )'
+    );
+
     return $pdo;
 }

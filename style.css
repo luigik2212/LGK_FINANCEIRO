@@ -22,6 +22,10 @@ body.login-page {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
+.app-shell {
+    max-width: 980px;
+}
+
 body.login-page .container {
     margin: 0;
     width: min(460px, 100%);
@@ -32,6 +36,11 @@ h1 {
     font-size: 24px;
 }
 
+h2 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
 label {
     display: block;
     margin-top: 10px;
@@ -39,12 +48,14 @@ label {
     font-weight: 600;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #d1d5db;
     box-sizing: border-box;
+    background: #fff;
 }
 
 button {
@@ -58,9 +69,25 @@ button {
     cursor: pointer;
 }
 
+.button-secondary {
+    background: #374151;
+    width: auto;
+    margin: 0;
+    padding: 10px 14px;
+}
+
 a {
     color: #2563eb;
     text-decoration: none;
+}
+
+.button-link {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 600;
 }
 
 .alert {
@@ -82,4 +109,110 @@ a {
 .meta {
     color: #6b7280;
     font-size: 14px;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.actions form {
+    margin: 0;
+}
+
+.actions button {
+    margin: 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.stat-card {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: 14px;
+    background: #eff6ff;
+}
+
+.stat-card.warning {
+    background: #fffbeb;
+}
+
+.stat-card.success {
+    background: #ecfdf5;
+}
+
+.stat-card h2 {
+    margin: 0;
+    font-size: 15px;
+    color: #374151;
+}
+
+.stat-card p {
+    font-size: 26px;
+    margin: 8px 0 0;
+    font-weight: bold;
+}
+
+.stat-card small {
+    color: #4b5563;
+}
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.grid-form .grid-full {
+    grid-column: 1 / -1;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge.pendente {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.badge.paga {
+    background: #dcfce7;
+    color: #166534;
 }

@@ -5,6 +5,14 @@ body {
     min-height: 100vh;
 }
 
+body.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
 .container {
     max-width: 460px;
     margin: 40px auto;
@@ -12,6 +20,11 @@ body {
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+body.login-page .container {
+    margin: 0;
+    width: min(460px, 100%);
 }
 
 h1 {

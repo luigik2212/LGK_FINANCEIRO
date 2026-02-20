@@ -35,7 +35,7 @@ $flash = getFlash();
     <title>Login - <?= e(APP_NAME); ?></title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="login-page">
 <div class="container">
     <h1>Entrar</h1>
 

@@ -52,6 +52,53 @@ $listStmt = db()->prepare(
 );
 $listStmt->execute([':user_id' => $user['id']]);
 $accounts = $listStmt->fetchAll();
+
+$today = new DateTimeImmutable('today');
+$weekEnd = $today->modify('+6 days');
+$counters = [
+    'all' => count($accounts),
+    'today' => 0,
+    'week' => 0,
+    'late' => 0,
+];
+
+$groupedRows = [
+    'Hoje' => [],
+    'Esta semana' => [],
+    'Próximas' => [],
+    'Atrasadas' => [],
+];
+
+foreach ($accounts as $account) {
+    $due = DateTimeImmutable::createFromFormat('Y-m-d', $account['due_date']);
+    if (!$due) {
+        continue;
+    }
+
+    if ($due->format('Y-m-d') === $today->format('Y-m-d')) {
+        $counters['today']++;
+    }
+
+    if ($due >= $today && $due <= $weekEnd) {
+        $counters['week']++;
+    }
+
+    $isLate = $account['status'] === 'pendente' && $due < $today;
+    if ($isLate) {
+        $counters['late']++;
+    }
+
+    $groupLabel = 'Próximas';
+    if ($isLate) {
+        $groupLabel = 'Atrasadas';
+    } elseif ($due->format('Y-m-d') === $today->format('Y-m-d')) {
+        $groupLabel = 'Hoje';
+    } elseif ($due > $today && $due <= $weekEnd) {
+        $groupLabel = 'Esta semana';
+    }
+
+    $groupedRows[$groupLabel][] = $account;
+}
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -62,11 +109,17 @@ $accounts = $listStmt->fetchAll();
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container app-shell">
-    <div class="topbar">
-        <h1>Contas da casa</h1>
-        <a class="button-link" href="dashboard.php">Voltar ao dashboard</a>
-    </div>
+<div class="container app-shell contas-layout">
+    <header class="contas-header">
+        <div>
+            <h1>Contas a Pagar</h1>
+            <p class="meta">Organize pagamentos por prioridade e vencimento.</p>
+        </div>
+        <div class="contas-header-actions">
+            <a class="button-link button-secondary" href="dashboard.php">Dashboard</a>
+            <a class="button-link" href="#nova-conta">+ Adicionar conta</a>
+        </div>
+    </header>
 
     <?php if ($flash): ?>
         <div class="alert <?= e($flash['type']); ?>"><?= e($flash['message']); ?></div>
@@ -76,17 +129,79 @@ $accounts = $listStmt->fetchAll();
         <div class="alert error"><?= e($error); ?></div>
     <?php endif; ?>
 
+    <section class="kpi-tabs" aria-label="Resumo de contas">
+        <span class="tab-chip active">Todas (<?= e((string)$counters['all']); ?>)</span>
+        <span class="tab-chip">Vencem hoje (<?= e((string)$counters['today']); ?>)</span>
+        <span class="tab-chip">Na semana (<?= e((string)$counters['week']); ?>)</span>
+        <span class="tab-chip danger">Atrasadas (<?= e((string)$counters['late']); ?>)</span>
+    </section>
+
+    <section class="toolbar">
+        <div class="toolbar-filter">Categoria: <strong>Todas</strong></div>
+        <div class="toolbar-search">
+            <input type="search" placeholder="Buscar conta..." aria-label="Buscar conta">
+        </div>
+    </section>
+
     <section>
+        <?php if (!$accounts): ?>
+            <p class="meta">Você ainda não cadastrou contas.</p>
+        <?php else: ?>
+            <div class="table-wrapper contas-table-wrap">
+                <table class="contas-table">
+                    <thead>
+                    <tr>
+                        <th>Fornecedor</th>
+                        <th>Descrição</th>
+                        <th>Vencimento</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th class="ta-right">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($groupedRows as $groupTitle => $rows): ?>
+                        <?php if (!$rows) {
+                            continue;
+                        } ?>
+                        <tr class="group-row">
+                            <td colspan="6"><?= e($groupTitle); ?></td>
+                        </tr>
+                        <?php foreach ($rows as $account): ?>
+                            <tr>
+                                <td class="supplier-cell"><?= e($account['title']); ?></td>
+                                <td><?= e($account['category']); ?></td>
+                                <td><?= e(date('d/m/Y', strtotime($account['due_date']))); ?></td>
+                                <td><?= e(brl((float)$account['amount'])); ?></td>
+                                <td>
+                                    <span class="badge <?= e($account['status']); ?>">
+                                        <?= e($account['status'] === 'paga' ? 'Paga' : 'Pendente'); ?>
+                                    </span>
+                                </td>
+                                <td class="ta-right">
+                                    <button class="mini-btn" type="button" disabled>Editar</button>
+                                    <button class="mini-btn danger" type="button" disabled>Excluir</button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section id="nova-conta" class="form-panel">
         <h2>Nova conta</h2>
         <form method="post" action="contas.php" class="grid-form">
             <div>
-                <label for="title">Descrição</label>
-                <input id="title" name="title" type="text" placeholder="Ex.: Energia elétrica" required>
+                <label for="title">Fornecedor</label>
+                <input id="title" name="title" type="text" placeholder="Ex.: Luz & Energia" required>
             </div>
 
             <div>
-                <label for="category">Categoria</label>
-                <input id="category" name="category" type="text" placeholder="Ex.: Moradia" required>
+                <label for="category">Descrição</label>
+                <input id="category" name="category" type="text" placeholder="Ex.: Conta de energia" required>
             </div>
 
             <div>
@@ -111,38 +226,6 @@ $accounts = $listStmt->fetchAll();
                 <button type="submit">Salvar conta</button>
             </div>
         </form>
-    </section>
-
-    <section>
-        <h2>Lista de contas</h2>
-        <?php if (!$accounts): ?>
-            <p class="meta">Você ainda não cadastrou contas.</p>
-        <?php else: ?>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Descrição</th>
-                        <th>Categoria</th>
-                        <th>Vencimento</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($accounts as $account): ?>
-                        <tr>
-                            <td><?= e($account['title']); ?></td>
-                            <td><?= e($account['category']); ?></td>
-                            <td><?= e(date('d/m/Y', strtotime($account['due_date']))); ?></td>
-                            <td><?= e(brl((float)$account['amount'])); ?></td>
-                            <td><span class="badge <?= e($account['status']); ?>"><?= e(ucfirst($account['status'])); ?></span></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
     </section>
 </div>
 </body>
